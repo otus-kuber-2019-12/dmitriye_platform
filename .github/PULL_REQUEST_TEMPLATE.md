@@ -28,7 +28,7 @@ kubectl port-forward --address 0.0.0.0 pod/web 8000:8000
 ```bash
 minikube start
 kubectl apply -f frontend-pod.yaml // frontend-pod-healthy.yaml для проверки исправленного решения
-kubectl port-forward --address 0.0.0.0 pod/web 8080:8080
+kubectl port-forward --address 0.0.0.0 pod/frontend 8080:8080
 ```
 
 ## Как проверить работоспособность:
