@@ -1,0 +1,41 @@
+0) После диплоя ингресса взять его IP (current -> 34.69.241.17)
+    kubectl create ns nginx-ingress
+    helm upgrade --install nginx-ingress stable/nginx-ingress --wait --namespace=nginx-ingress --version=1.11.1
+1) Перед релизом чарта надо создать неймспейс
+2) chartmuseum устанавливается после установки CRD
+    # CERT-MANAGER
+    kubectl create ns cert-manager
+    kubectl apply -f https://raw.githubusercontent.com/jetstack/cert-manager/release-0.9/deploy/manifests/00-crds.yaml
+    kubectl label namespace cert-manager certmanager.k8s.io/disable-validation="true"
+    helm upgrade --install cert-manager jetstack/cert-manager --wait --namespace=cert-manager --version=0.9.0
+    !!! нужно добавить Issuer чтобы выпускать сертификаты + у ингрессов указывать анотации для автоматического выпуска сертификатов
+
+    # CHARTMUSEUM
+    kubectl create ns chartmuseum
+    helm upgrade --install chartmuseum stable/chartmuseum --wait --namespace=chartmuseum --version=2.3.2 -f kubernetes-templating/chartmuseum/values.yaml
+
+    # HARBOR
+    kubectl create ns harbor
+    helm upgrade --install harbor harbor/harbor --wait --namespace=harbor -f kubernetes-templating/harbor/values.yaml
+3) не забыть на задание со звездой создать свой чарт и задеплоить его в chartmuseum
+    helm create kubernetes-templating/hipster-shop
+    kubectl create ns hipster-shop
+    helm upgrade --install hipster-shop kubernetes-templating/hipster-shop --namespace hipster-shop
+
+    !!! для открытия внешнки NodePort: google-cloud-sdk/bin/gcloud compute firewall-rules create test-node-port-1 --allow tcp:[NODE PORT]
+
+    helm create kubernetes-templating/frontend
+    helm upgrade --install hipster-shop kubernetes-templating/hipster-shop --namespace hipster-shop
+    helm upgrade --install frontend kubernetes-templating/frontend --namespace hipster-shop
+4) прочитать по helmfile
+5) создать неймспейсы в из файлов
+
+jsonnet example https://github.com/bitnami/kubecfg/blob/master/examples/guestbook.jsonnet
+guestbook https://github.com/kubernetes/kubernetes/tree/master/examples/guestbook
+
+kubecfg show kubecfg/services.jsonnet
+kubecfg update kubernetes-templating/kubecfg/services.jsonnet --namespace hipster-shop
+
+1) ingress
+2) cert-manager + cluster issuer
+3) harbor + certificate in local secrets (+ingress IP)
