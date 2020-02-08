@@ -1,0 +1,24 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    kubernetes.io/tls-acme: "true"
+    certmanager.k8s.io/cluster-issuer: letsencrypt-production
+    certmanager.k8s.io/acme-challenge-type: http01
+  name: shop
+  labels:
+    app: frontend
+spec:
+  rules:
+  - host: {{ .Values.host }}
+    http:
+      paths:
+      - backend:
+          serviceName: frontend
+          servicePort: {{ .Values.service.port }}
+        path: /
+  tls:
+  - hosts:
+    - {{ .Values.host }}
+    secretName: shop-tls
