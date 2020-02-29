@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web
+  namespace: application
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: web
+  template:
+    metadata:
+      labels:
+        app: web
+    spec:
+      containers:
+        - name: app
+          image: jndogan/simple-nginx:0.1.1
+          ports:
+            - name: web
+              containerPort: 80
+          volumeMounts:
+            - name: app
+              mountPath: /app
+        - name: nginx-exporter
+          image: nginx/nginx-prometheus-exporter:0.5.0
+          args: ['-nginx.scrape-uri', 'http://localhost:80/basic_status']
+          ports:
+            - name: stats
+              containerPort: 9113
+      initContainers:
+        - name: init-gen-index
+          image: busybox:latest
+          volumeMounts:
+            - name: app
+              mountPath: /app
+          command: ['sh', '-c', 'wget -O- https://tinyurl.com/otus-k8s-intro | sh']
+      volumes:
+        - name: app
+          emptyDir: {}
